@@ -21,7 +21,7 @@ Make sure you have the following installed on your machine:
 ## Navigate to the project directory:
 
    ```bash
-   cd your-repo
+   cd file_sharing
    ```
 
 ## Create a virtual environment (optional but recommended):
