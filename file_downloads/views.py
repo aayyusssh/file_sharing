@@ -1,11 +1,8 @@
-from django.views import View
 from rest_framework.response import Response
 from django.conf import settings
 from file_uploads.models import UploadedFile
 from rest_framework import status
-
 from rest_framework.views import APIView
-
 import jwt,datetime
 from django.http import HttpResponse, HttpResponseBadRequest
 from authentication.utils import get_authenticated_user

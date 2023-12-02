@@ -4,15 +4,13 @@ from rest_framework import status
 from datetime import datetime, timedelta
 from django.conf import settings
 from .models import CustomUser
-from rest_framework.exceptions import AuthenticationFailed
-
 
 def generate_registration_token(email, user_id):
     payload = {
         "email": email,
         "user_id": user_id,
         "exp": datetime.utcnow()
-        + timedelta(minutes=1),  # Token expiration time (adjust as needed)
+        + timedelta(minutes=15),  # Token expiration time (adjust as needed)
         "iat": datetime.utcnow(),
     }
 
@@ -58,10 +56,10 @@ def validate_registration_token(token):
             status=status.HTTP_400_BAD_REQUEST,
         )
     
+#get the credentials of logged in user
 def get_authenticated_user(token):
     if not token:
         return None
-
     try:
       payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
     except jwt.ExpiredSignatureError:

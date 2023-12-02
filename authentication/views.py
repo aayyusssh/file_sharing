@@ -4,14 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.core.mail import send_mail
 from django.conf import settings
-from django.shortcuts import get_object_or_404
 from .models import CustomUser
 from rest_framework.exceptions import AuthenticationFailed
 from .serializers import UserSerializer
 from .utils import generate_registration_token, validate_registration_token
 import jwt,datetime
-from django.urls import reverse
-from .utils import get_authenticated_user
 
 class SignUpView(APIView):
     permission_classes = [AllowAny]
@@ -22,6 +19,7 @@ class SignUpView(APIView):
         if existing_user:
             re_registration_token = generate_registration_token(existing_user.email, existing_user.id)
             if not existing_user.is_active:
+                #if the user is registered but not activated yet
                 # Re-Send verification email
                 subject = "Activate your account"
                 message = f"Click the link to activate your account: {settings.FRONTEND_URL}/auth/activate/{re_registration_token}"
@@ -32,11 +30,12 @@ class SignUpView(APIView):
                     {"message": "Check your email for activation link."},
                     status=status.HTTP_200_OK,
                 )
+            #if the user is registered and activated
             return Response(
                     {"message": "user already registered"},
                     status=status.HTTP_409_CONFLICT,
                 )
-
+        # register new user
         serializer = UserSerializer(data=request.data)
        
         if serializer.is_valid():
@@ -66,11 +65,15 @@ class ActivateAccountView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
+    
     def post(self, request):
+
+        #if user is already logged in
         user_token = request.COOKIES.get('jwt',None)
         if user_token is not None:
             return Response({"message":"Already Logged in"},status=status.HTTP_400_BAD_REQUEST)
+        
+        #login user using jwt
         email = request.data.get("email")
         password = request.data.get("password")
 
@@ -82,6 +85,7 @@ class LoginView(APIView):
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
+        #create the secret token for the user
         payload = {
             'id': user.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),

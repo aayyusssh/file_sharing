@@ -15,6 +15,7 @@ class FileUploadView(APIView):
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
         user = get_authenticated_user(token)
+        #check for operation user
         if not user.is_superuser:
             return Response({"detail": "Permission denied. Only superusers can upload files."},
                             status=status.HTTP_401_UNAUTHORIZED)
@@ -29,6 +30,7 @@ class FileUploadView(APIView):
 class FileListView(APIView):
     def get(self, request):
         user_token = request.COOKIES.get('jwt',None)
+        #check if user is logged in
         if user_token is None:
             return Response({"message":"Login first to display data"},status=status.HTTP_401_UNAUTHORIZED)
         try:
